@@ -36,6 +36,27 @@ func getTasks(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(tasks)
 }
 
+func deleteTask(w http.ResponseWriter, r *http.Request) {
+	//From request save all in vars
+	vars := mux.Vars(r)
+
+	//from vars get the id and try to parse to Number
+	taskID, err := strconv.Atoi(vars["id"])
+
+	//If err true, response insert a valid Task
+	if err != nil {
+		fmt.Fprintf(w, "Invalid ID")
+	}
+
+	for i, task := range tasks {
+		if task.ID == taskID {
+			tasks = append(tasks[:i], tasks[i+1:]...)
+			fmt.Fprintf(w, "The task with the ID %v has been removed succesfully", taskID)
+		}
+	}
+
+}
+
 //Method for Create New Tasks and append it to allTasks
 func createTask(w http.ResponseWriter, r *http.Request) {
 	//newTask instance of task {ID,Name,Content}
@@ -93,6 +114,7 @@ func main() {
 	router.HandleFunc("/tasks", getTasks).Methods("GET")
 	router.HandleFunc("/tasks", createTask).Methods("POST")
 	router.HandleFunc("/tasks/{id}", getTask).Methods("GET")
+	router.HandleFunc("/tasks/{id}", deleteTask).Methods("DELETE")
 
 	//Server Listening
 	log.Fatal(http.ListenAndServe(":3000", router))
